@@ -267,5 +267,144 @@ delete from `student` where id=1;
 truncate `student`
 ```
 
+#### 6.数据表数据查询
+
+##### 6.1 指定查询字段
+
+  ```mysql
+-- 查询全部学生
+select * from student
+
+-- 查询指定字段
+select `studentNo`,`studentName` from student
+
+-- 别名，给结果起一个名字 as 可以给字段起别名，也可以给表起别名
+select `studentNo` as 学号,`studentName` as 学生姓名 from student as s
+
+-- 函数 concat(a,b)
+select concat('姓名:',studentName) as 新名字 from student
+
+-- 去重 distinct 重复的数据只显示一条
+select distinct `studentNo` from result
+
+
+-- 数据库表达式
+-- 查询系统版本(函数)
+select version()
+
+-- 用来计算(表达式)
+select 100*3-1 as 计算结果
+
+-- 查询自增的步长(变量)
+select @@auto_increment_increment
+
+-- 学员考试成绩+1分 查看
+select `studnetNo`,`studentResult`+1 as '提分后' from result
+  ```
+
+##### 6.2 where 条件子句
+
+> 逻辑运算符
+
+| 运算符       | 语法                | 描述   |
+| ------------ | ------------------- | ------ |
+| and   &&     | a and b    a&&b     | 逻辑与 |
+| or      \|\| | a or b       a\|\|b | 逻辑或 |
+| not     !    | not a         !a    | 逻辑非 |
+
+```mysql
+-- 查询考试成绩在95~100分之间
+select student,studentresult from result
+where studentresult>=95 and studentresult<=100
+
+-- 除了1000号学生之外的同学的成绩
+select student,studentresult from result
+where studentNo!=1000
+```
+
+##### 6.3 模糊查询：比较运算符
+
+| 运算符      | 语法               | 描述                                          |
+| ----------- | ------------------ | --------------------------------------------- |
+| is null     | a is null          | 如果操作符为null,结果为真                     |
+| is not null | a is not null      | 如果操作符不为null,结果为真                   |
+| between     | a between b        | 若a在b和c之间，则结果为真                     |
+| **like**    | a like b           | SQL匹配，如果a匹配b，则结果为真               |
+| **in**      | a in (a1,a2,a3...) | 假设a在a1,或者a2...其中的某一个值中，结果为真 |
+
+```mysql
+-- 查询姓刘的同学
+-- like 结合 %（代表0到任意个字符） _（代表一个字符）
+select student,studentname from student
+where studentname like '刘%'
+
+-- 查询姓刘的同学，名字后面只有一个字的
+select student,studentname from student
+where studentname like '刘_'
+
+-- 查询姓刘的同学，名字后面只有两个字的 _ _ 
+select student,studentname from student
+where studentname like '刘__'
+
+-- 查询名字中间有加字的同学 %加%
+select student,studentname from student
+where studentname like '%加%'
+
+-- in(具体的一个或者多个值)
+-- 查询 1001,1002,1003
+select `student`,`studentName` from student
+where studentNo in(1001,1002,1003)
+
+-- 查询地址为空的学生 null ''
+select `student`,`studentName` from student
+where address='' or address is null
+
+```
+
+##### 6.4 联表查询
+
+| 操作       | 描述                                       |
+| ---------- | ------------------------------------------ |
+| inner join | 如果表中至少有一个匹配，就返回行           |
+| left join  | 会从左表中返回所有的值，即使右表中没有匹配 |
+| right join | 会从右表中返回所有的值，即使左表中没有匹配 |
+
+```mysql
+-- 思路
+-- 1.分析需求，分析查询的字段来自哪些表
+-- 2.确定使用哪种连接查询
+-- 确定交叉点（这两个表中哪个数据是相同的）
+-- 判断的条件，学生表中的  studentNo= 成绩表 studentNo
+
+-- join (连接的表) on (判断的条件) 连接查询
+-- where 等值查询
+-- 查询参加了考试的同学（学号，姓名，科目编号，分数）
+select s.studentNo,studentName,subjectNo,studentResult
+from student as s
+inner join result as r
+on s.studentNo=r.studentNo
+
+-- right join 
+select s.studentNo,studentName,subjectNo,studentResult
+from student as s
+right join result as r
+on s.studentNo=r.studentNo
+
+-- left join
+select s.studentNo,studentName,subjectNo,studentResult
+from student as s
+left join result as r
+on s.studentNo=r.studentNo
+
+-- 查询缺考的同学
+select s.studentNo,studentName,subjectNo,studentResult
+from student as s
+left join result as r
+on s.studentNo=r.studentNo
+where studentresult is null
+```
+
+##### 6.5 自连接
+
 
 
