@@ -3,7 +3,7 @@
 #### 1.创建数据库
 
 ```mysql
-create database if not exists westos
+create database if not exists westos character set utf8 collate utf8_general_ci
 ```
 
 #### 2.删除数据库
@@ -268,6 +268,22 @@ truncate `student`
 
 #### 6.数据表数据查询
 
+##### 6.0 select查询规则
+
+```mysql
+SELECT [ALL | DISTINCT]
+{* | table.* 1 [table. field1[as alias1][,table. field2[as alias2]][,...]]}
+FROM table_ name [as table_ _alias]
+[left | right | inner join table_ name2] --联合查询
+[WHERE .. .] -- 指定结果需满足的条件
+[GROUP BY ...] -- 指定结果按照哪几个字段来分组
+[HAVING]-- 过滤分组的记录必须满足 的次要条件
+[ORDER BY ...] -- 指定查询记录按一个或多 个条件排序
+[LIMIT {[offset,]row_ countI row_ countOFFSET offset}];-- 指定查询的记录从哪条至哪条
+```
+
+
+
 ##### 6.1 指定查询字段
 
   ```mysql
@@ -406,4 +422,153 @@ where studentresult is null
 ##### 6.5 自连接
 
 * 一张表中有两张表的内容将一张表以别名的方式作为两张表来用
+
+##### 6.6.分页和排序
+
+```mysql
+-- order by 排序
+-- desc 降序排序  asc升序排序
+select s.student,studentname,stbjectname,studentresult
+from student s
+inner join result r
+on s.student=r.student
+inner join subject sub
+on r.subjectno =sub.subjectno
+where subjectname='数据库结构-1'
+order by studentresult desc
+
+-- 分页 每页只显示5条数据
+-- limit 起始值,页面大小
+-- limit 0,5 1-5条数据
+from student s
+inner join result r
+on s.student=r.student
+inner join subject sub
+on r.subjectno =sub.subjectno
+where subjectname='数据库结构-1'
+order by studentresult desc
+limit 0,5
+-- 第一页 limit 0,5 	（1-1）*5
+-- 第二页 limit 5,5  	（2-1）*5
+-- 第三页 limit 10,5  	（3-1）*5
+-- 第N页 limit （n-1）*pageSize,pageSize
+-- 【pageSize：页面大小】
+-- 【（n-1）*pageSize：起始值】
+-- 【 n ：当前页】
+-- 【数据总数/页面大小 = 总页数】
+
+```
+
+##### 6.7 子查询
+
+> wherer
+
+```mysql
+-- 1.查询数据库结构-1 的所有考试结果（学号，科目编号，成绩），降序排列 
+-- 方式一：使用连接查询
+select studentNo,r.subjectNo,studentresult
+from result r
+inner join subject sub
+on r.subjectNo = sub.subjectNo
+where subjectName = '数据库结构-1'
+order by studentResult desc
+
+-- 方式二：使用子查询
+select studentNo,subjectNo,studentresult
+from result
+where subjectNo = (
+	select subjectNo from subject 
+    where subjectName = '数据库结构-1'
+)
+order by studentResult desc
+```
+
+##### 6.8 分组和过滤
+
+```mysql
+-- 查询不同课程的平均分，最高分，最低分，平均分大于80分
+-- 核心：（根据不同的课程分组）
+select subjectName,avg(studentResult) as 平均分,max(studentResult),min(studentResult)
+form result r
+inner join subject sub
+on r.subjectNo=sub.subjectNo
+group by r.subjectNo -- 通过什么字段来分组
+having 平均分>80
+```
+
+
+
+### 八、MySQL函数
+
+#### 1. 常用函数
+
+```mysql
+-- 数学运算
+select abs(-8) -- 绝对值
+select ceiling(9.4) -- 向上取整
+select floor(9.4) -- 向下取整
+select rand() -- 返回一个0-1之间的随机数
+select sign(10) -- 判断一个数的符合  0-0 负数返回-1 正数返回1
+
+-- 字符串函数
+select char_length('即使再小的帆也能远航') -- 返回字符串长度
+select concat('我','love') -- 拼接字符串
+select insert('我爱编程',1,2,'超级热爱') -- 查询 替换 从1开始到2结束 我爱 被替换为 超级热爱
+select lower('ceshiyixia') -- 变为小写字母
+select upper('ceshiyixia') -- 变为大写字母
+select instr('ceshiyixia','h') -- h第一次出现的位置
+select replace('坚持就能成功','坚持','努力') -- 将坚持替换为努力
+select substr('坚持就能成功',2,4) -- 返回指定的字符串长度 从第二个开始截取6个
+select reverse() -- 反转字符 
+
+-- 时间日期函数（记住）
+select current_date() -- 获取当前日期
+select curdate() -- 获取当前日期
+select now() -- 获取当前日期及时间
+select localtime() -- 本地时间
+select sysdate() -- 系统时间
+
+select year(now()) -- 年
+select month(now()) -- 月
+select day(now()) -- 日
+select hour(now()) -- 时
+select minute(now()) -- 分
+select second(now()) -- 秒
+
+-- 系统
+select system_user() -- 系统登陆用户
+select user()
+select version()
+```
+
+#### 2.聚合函数
+
+| 函数名称 | 描述   |
+| -------- | ------ |
+| count()  | 计数   |
+| sum()    | 求和   |
+| avg()    | 平均值 |
+| max()    | 最大值 |
+| min()    | 最小值 |
+| ...      |        |
+
+```mysql
+select count(studentNo) from student -- count(字段)，会忽略所有的null值
+select count(*) from student -- count(*)，不会忽略所有的null值
+select count(1) from student -- count(1)，不会忽略所有的null值
+
+select sum(`studentResult`) as 总和 from result
+select avg(`studentResult`) as 平均分 from result
+select max(`studentResult`) as 最高分 from result
+select min(`studentResult`) as 最低分 from result
+
+-- 查询不同课程的平均分，最高分，最低分，平均分大于80分
+-- 核心：（根据不同的课程分组）
+select subjectName,avg(studentResult) as 平均分,max(studentResult),min(studentResult)
+form result r
+inner join subject sub
+on r.subjectNo=sub.subjectNo
+group by r.subjectNo -- 通过什么字段来分组
+having 平均分>80
+```
 
