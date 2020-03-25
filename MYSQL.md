@@ -3,7 +3,7 @@
 #### 1.创建数据库
 
 ```mysql
-create database if not exists school
+create database if not exists westos
 ```
 
 #### 2.删除数据库
@@ -76,7 +76,7 @@ show databases --查看所有的数据库
 * 0填充
 * 不足的位数，使用0来填充 int(3)  ,5 -- 005 
 
-> 自增：
+> 自增：auto_increment
 
 * 通常理解为自增，自动在上一条记录的基础上+1
 * 通常用来设计唯一的主键，必须是整数类型
@@ -87,7 +87,7 @@ show databases --查看所有的数据库
 * 假设设置为not null，如果不给它赋值，就会报错
 * null，如果不填写值，默认就是null
 
-> 默认：
+> 默认：default
 
 * 设置默认的值！
 * sex，默认值为男，如果不指定该列的值，则会有默认的值！
@@ -111,7 +111,7 @@ gmt_update   修改时间
 ```mysql
 -- 注意点，使用英文(),表的名称和字段尽量使用``括起来
 -- 字符串使用单引号括起来
--- 所有的语句后面加  ,(英文的)最后一个字段不要加
+-- 所有的语句后面加  ,(英文的) 最后一个字段不要加
 create table if not exists `studet`(
 	`id` int(4) not null auto_increment comment '学号',
     `name` varchar(30) not null default '匿名' comment '姓名',
@@ -210,7 +210,6 @@ create table if not exists `studet`(
     `email` varchar(50) default null comment '邮箱',
     `gradeid` int(10) not null comment '学生的年纪',
     primary key (`id`),
-    key `FK_gradeid` (`gradeid`),
  	constraint `FK_gradeid` foreign key (`gradeid`) references `grade` (`gradeid`)
 )engine=innodb default charset=utf8
 ```
@@ -374,7 +373,7 @@ where address='' or address is null
 -- 1.分析需求，分析查询的字段来自哪些表
 -- 2.确定使用哪种连接查询
 -- 确定交叉点（这两个表中哪个数据是相同的）
--- 判断的条件，学生表中的  studentNo= 成绩表 studentNo
+-- 判断的条件，学生表 studentNo = 成绩表 studentNo
 
 -- join (连接的表) on (判断的条件) 连接查询
 -- where 等值查询
@@ -406,5 +405,5 @@ where studentresult is null
 
 ##### 6.5 自连接
 
-
+* 一张表中有两张表的内容将一张表以别名的方式作为两张表来用
 
