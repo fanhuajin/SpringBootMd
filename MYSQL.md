@@ -572,3 +572,73 @@ group by r.subjectNo -- 通过什么字段来分组
 having 平均分>80
 ```
 
+### 九、数据库授权和备份
+
+#### 1.授权
+
+```mysql
+-- 创建用户
+create user fanhuajin identified by '123456'
+
+-- 修改密码 修改当前用户密码
+set password=password('666666')
+
+-- 修改密码 修改指定用户密码
+set password for fanhuajin=password('666666')
+
+-- 重命名
+rename user fanhuaji to fanhuajin2
+
+-- 用户授权 授予全部的权限
+grant all privileges on *.* to fanhuajin2
+
+-- 查看权限
+show grants for fanhuajin -- 查看指定用户的权限
+show grants for root@localhost
+
+-- 撤销权限
+revoke all privileges on *.* from fanhuajin
+
+-- 删除用户
+drop user fanhuajin
+```
+
+#### 2.备份
+
+```mysql
+-- 直接拷贝物理文件
+-- 在可视化工具中手动导出
+-- 使用命令行cmd 导出 mysqldump 命令行使用
+
+mysqldump -hlocalhost -uroot -proot school  > D:/school.sql  -- 导出数据库
+mysqldump -hlocalhost -uroot -proot school student > D:/student.sql -- 导出表
+mysqldump -hlocalhost -uroot -proot school student result > D:/student_result.sql -- 导出多张表
+-- 导入
+-- 登陆的情况下，切换到指定数据库
+source 备份文件
+
+```
+
+### 十、三大范式
+
+#### 1.第一范式
+
+* 原子性：保证每一列不可再分
+
+#### 2.第二范式
+
+* 前提：满足第一范式
+* 每张表只描述一件事情
+
+#### 3.第三范式
+
+* 前提：满足第一范式和第二范式
+* 第三范式需要确保数据表中的每一列数据都和主键直接相关，而不能间接相关
+
+#### 规范性和性能的问题
+
+关联查询的表不得超过三张表
+
+* 考虑商业化的需求和目标，（成本，用户体验！）数据库的性能更加重要
+* 在规范性能的问题的时候，需要适当的考虑一下规范性
+* 故意给某些表增加一些冗余的字段。（从多表查询中变为单表查询）
