@@ -536,9 +536,33 @@ void testDeleteMap(){
 ### 十一、条件构造器
 
 ```java
-//条件查询器
 @Test
-void testwrapper(){
+void test1(){
+    //查询name不为空的用户，并且邮箱不为空的用户，年龄大于等于12
+    QueryWrapper<User> wrapper = new QueryWrapper<>();
+    wrapper
+            .isNotNull("name")
+            .isNotNull("email")
+            .ge("age",12);
+    List<User> users = userMapper.selectList(wrapper);
+    for (User user : users) {
+        System.out.println(user);
+    }
+}
+
+@Test
+void test2(){
+    //查询名字为fanhuajin的
+    QueryWrapper<User> wrapper = new QueryWrapper<>();
+    wrapper.eq("name","fanhuajin");
+    User user = userMapper.selectOne(wrapper);//查询一个数据，出现多个结果使用list 或者map
+    System.out.println(user);
+}
+
+
+@Test
+void test3(){
+    //查询年龄在20~30岁之间的用户
     QueryWrapper<User> wrapper = new QueryWrapper<>();
     wrapper.between("age",20,30);
     List<Map<String, Object>> maps = userMapper.selectMaps(wrapper);
@@ -546,5 +570,148 @@ void testwrapper(){
         System.out.println(map);
     }
 }
+@Test
+void test4(){
+    //模糊查询
+    QueryWrapper<User> wrapper = new QueryWrapper<>();
+    wrapper
+            .notLike("name","e")//name 不包含e的
+            .likeRight("email","t");//email  t%
+    List<Map<String, Object>> maps = userMapper.selectMaps(wrapper);
+    for (Map<String, Object> map : maps) {
+        System.out.println(map);
+    }
+}
+@Test
+void test5(){
+    QueryWrapper<User> wrapper = new QueryWrapper<>();
+    //id 在子查询中查出来
+    wrapper.inSql("id","select id from user where id<3");
+    List<Object> objects = userMapper.selectObjs(wrapper);
+    for (Object object : objects) {
+        System.out.println(object);
+    }
+}
+
+@Test
+void test6(){
+    QueryWrapper<User> wrapper = new QueryWrapper<>();
+    //通过id进行排序
+    wrapper.orderByDesc("id");
+    List<User> users = userMapper.selectList(wrapper);
+    for (User user : users) {
+        System.out.println(user);
+    }
+
+}
+```
+
+### 十二、代码自动生成器
+
+dao、pojo、service、controller都给我自己去编写完成！
+
+导入依赖
+
+```java
+<!-- 模板引擎 -->
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity-engine-core</artifactId>
+    <version>2.0</version>
+</dependency>
+```
+
+
+
+```java
+package com.fan;
+
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.generator.AutoGenerator;
+import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
+import com.baomidou.mybatisplus.generator.config.GlobalConfig;
+import com.baomidou.mybatisplus.generator.config.PackageConfig;
+import com.baomidou.mybatisplus.generator.config.StrategyConfig;
+import com.baomidou.mybatisplus.generator.config.po.TableFill;
+import com.baomidou.mybatisplus.generator.config.rules.DateType;
+import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+
+import java.util.ArrayList;
+
+//代码自动生成器
+public class fan {
+    public static void main(String[] args) {
+        //需要构建一个 代码自动生成器对象
+        AutoGenerator mpg = new AutoGenerator();
+        //配置策略
+
+        //全局配置
+        GlobalConfig gc = new GlobalConfig();
+        String projectPath = System.getProperty("user.dir");
+        gc.setOutputDir(projectPath+"/src/main/java");
+
+        gc.setAuthor("fanhuajin");
+        gc.setOpen(false);
+        gc.setFileOverride(false);//是否覆盖
+        gc.setServiceName("%sService");//去Service 的I前缀
+        gc.setIdType(IdType.ID_WORKER);//主键策略
+        gc.setDateType(DateType.ONLY_DATE);//日期类型
+        gc.setSwagger2(false);//是否配置Swagger文档
+
+        mpg.setGlobalConfig(gc);
+
+        //2.设置数据源
+        DataSourceConfig dsc = new DataSourceConfig();
+        dsc.setUrl("jdbc:mysql://localhost:3306/mybatis_plus?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8");
+        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
+        dsc.setUsername("root");
+        dsc.setPassword("root");
+        dsc.setDbType(DbType.MYSQL);
+        mpg.setDataSource(dsc);
+
+        //3.包的配置
+        PackageConfig pc = new PackageConfig();
+        pc.setModuleName("blog");
+        pc.setParent("com.fan");
+        pc.setEntity("pojo");
+        pc.setMapper("mapper");
+        pc.setService("service");
+        pc.setController("controller");
+        mpg.setPackageInfo(pc);
+
+        //4.策略配置
+        StrategyConfig strategy = new StrategyConfig();
+        strategy.setInclude("user");//设置要映射的表名
+        strategy.setNaming(NamingStrategy.underline_to_camel);
+        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
+        strategy.setEntityLombokModel(true);//自动lombok
+        strategy.setLogicDeleteFieldName("deleted");//逻辑删除
+
+        //自动填充设置
+        TableFill createTime = new TableFill("create_time", FieldFill.INSERT);
+        TableFill updateTime = new TableFill("update_time", FieldFill.INSERT_UPDATE);
+        ArrayList<TableFill> tableFills = new ArrayList<>();
+        tableFills.add(createTime);
+        tableFills.add(updateTime);
+        strategy.setTableFillList(tableFills);
+
+        //乐观锁
+        strategy.setVersionFieldName("version");
+
+        //驼峰命名
+        strategy.setRestControllerStyle(true);
+
+        //连接下划线命名
+        strategy.setControllerMappingHyphenStyle(true);//localhost:8080/hello_id_2
+
+        mpg.setStrategy(strategy);
+
+        mpg.execute();//执行
+    }
+}
+
 ```
 

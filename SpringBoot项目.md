@@ -178,6 +178,9 @@ Settings.. --> Build,Execution,Deployment-->Build Tools -->maven
 src-->main-->resources-->application.yaml
 
 ```java
+#服务器端口
+server
+	port: 9000
 spring:
   datasource:
     username: root
